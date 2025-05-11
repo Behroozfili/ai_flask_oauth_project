@@ -41,23 +41,33 @@ def test_login(client):
     assert "accounts.google.com" in response.location
 
 
-def test_auth(app, client):
-    mock_token_response = {'access_token': 'fake-access-token',
-                           'id_token': 'fake-id-token', 'userinfo': {'sub': '123', 'name': 'Test User'}}
-    mock_user_info = {'sub': '12345',
-                      'name': 'Test User', 'email': 'test@example.com'}
+ def test_auth(app, client):
+    mock_token_response = {
+        'access_token': 'fake-access-token',
+        'id_token': 'fake-id-token',
+        'userinfo': {'sub': '123', 'name': 'Test User'}
+    }
+    mock_user_info = {
+        'sub': '12345',
+        'name': 'Test User',
+        'email': 'test@example.com'
+    }
 
+    # Simulate OAuth callback
     with app.app_context():
-
-        with unittest.mock.patch('app.routes.current_app.google_oauth.authorize_access_token', return_value=mock_token_response) as mock_authorize, \
-                unittest.mock.patch('app.routes.current_app.google_oauth.parse_id_token', return_value=mock_user_info) as mock_parse:
-
+        with unittest.mock.patch(
+            'app.routes.current_app.google_oauth.authorize_access_token',
+            return_value=mock_token_response
+        ) as mock_authorize, unittest.mock.patch(
+            'app.routes.current_app.google_oauth.parse_id_token',
+            return_value=mock_user_info
+        ) as mock_parse:
             response = client.get('/auth')
 
     assert response.status_code == 302
 
-    with app.test_request_context():
-        assert response.location.endswith('/analyze')
+    # After authentication, expect redirect to /analyze
+    assert response.location.endswith('/analyze')
 
     mock_authorize.assert_called_once()
     mock_parse.assert_called_once_with(mock_token_response)
