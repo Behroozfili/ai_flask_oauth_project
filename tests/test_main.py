@@ -1,6 +1,5 @@
 import pytest
 import unittest.mock
-from flask import url_for
 from app.main import create_app
 
 
@@ -18,12 +17,10 @@ def app():
 
 @pytest.fixture(scope='module')
 def client(app):
-
     return app.test_client()
 
 
 def test_secret_key(app):
-
     with app.app_context():
         assert app.config['SECRET_KEY'] == "testing_secret_key"
         assert app.secret_key is not None
@@ -41,7 +38,7 @@ def test_login(client):
     assert "accounts.google.com" in response.location
 
 
- def test_auth(app, client):
+def test_auth(app, client):
     mock_token_response = {
         'access_token': 'fake-access-token',
         'id_token': 'fake-id-token',
