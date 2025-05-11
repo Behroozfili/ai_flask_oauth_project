@@ -4,6 +4,7 @@ from unittest.mock import ANY
 from flask import url_for
 from app.main import create_app
 
+
 @pytest.fixture(scope='module')
 def app():
     _app = create_app()
@@ -15,24 +16,29 @@ def app():
     _app.config.update(test_config)
     yield _app
 
+
 @pytest.fixture(scope='module')
 def client(app):
     return app.test_client()
 
+
 def test_secret_key(app):
     with app.app_context():
         assert app.config['SECRET_KEY'] == "testing_secret_key"
-        assert app.secret_key is not None 
+        assert app.secret_key is not None
+
 
 def test_root(client):
     response = client.get('/')
     assert response.status_code == 200
     assert b"message" in response.data
 
+
 def test_login(client):
     response = client.get('/login')
     assert response.status_code == 302
     assert "accounts.google.com" in response.location
+
 
 def test_auth(app, client):
     mock_token_response = {
@@ -61,7 +67,6 @@ def test_auth(app, client):
     with app.test_request_context():
         expected_redirect_url = url_for('analyze', _external=False)
         assert response.location.endswith('/analyze')
-
 
     mock_authorize.assert_called_once()
     mock_parse.assert_called_once_with(mock_token_response, nonce=ANY)
